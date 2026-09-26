@@ -90,12 +90,12 @@ Azure Functions API under `/api`, both from one GitHub-connected resource, no se
    - **App location:** `/`
    - **Api location:** `api`
    - **Output location:** `dist`
-5. Create. Azure commits a workflow file to `.github/workflows/` for you and adds the
-   `AZURE_STATIC_WEB_APPS_API_TOKEN` secret to the repo automatically.
+5. Create. Azure commits a workflow file to `.github/workflows/` for you and adds its deploy-token secret to the
+   repo automatically.
 
-   This repo already includes `.github/workflows/azure-static-web-apps.yml` with the same locations — if Azure adds
-   its own during creation, keep whichever one has the correct `app_location`/`api_location`/`output_location` and
-   remove the duplicate so only one workflow deploys.
+   **Important:** the workflow Azure generates does not pass any `VITE_*` secret to the build. Add the `env:` block
+   from `.github/workflows/azure-static-web-apps-green-cliff-045fd4510.yml` to the `Build And Deploy` step, or the
+   site fails at load with "Missing required environment variable".
 
 ### 2. Set the frontend's build-time secrets (GitHub)
 
@@ -108,8 +108,8 @@ Vite bakes `VITE_*` variables into the JS bundle **at build time** — the GitHu
 | `VITE_SUPABASE_ANON_KEY`         | Your Supabase anon (public) key         |
 | `VITE_SUPABASE_BUCKET_VIENTOS`   | `Vientos` (or your bucket's real name)  |
 | `VITE_SUPABASE_BUCKET_YARETA`    | `Yareta` (or your bucket's real name)   |
-| `VITE_CONTACT_EMAIL`             | Contact email shown on the site         |
-| `VITE_CONTACT_PHONE`             | Contact phone shown on the site         |
+| `VITE_CONTACT_EMAIL`             | Optional. Hidden on the site if unset   |
+| `VITE_CONTACT_PHONE`             | Optional. Hidden on the site if unset   |
 
 Push to the deployed branch (or re-run the workflow) after adding these — the previous build won't have them.
 

@@ -23,14 +23,18 @@ export function ContactSection() {
               <MapPin size={16} />
               Ayllu de Quitor, San Pedro de Atacama
             </span>
-            <span className="contact__row">
-              <Mail size={16} />
-              {env.contactEmail}
-            </span>
-            <span className="contact__row">
-              <Phone size={16} />
-              {env.contactPhone}
-            </span>
+            {env.contactEmail && (
+              <span className="contact__row">
+                <Mail size={16} />
+                {env.contactEmail}
+              </span>
+            )}
+            {env.contactPhone && (
+              <span className="contact__row">
+                <Phone size={16} />
+                {env.contactPhone}
+              </span>
+            )}
           </div>
           <button className="btn btn-solid contact__cta" onClick={() => openBooking('vientos')}>
             Reservar

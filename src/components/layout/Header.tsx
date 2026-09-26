@@ -80,8 +80,12 @@ export function Header() {
           </div>
           <div className="header__mobile-contact">
             Ayllu de Quitor, San Pedro de Atacama
-            <br />
-            {env.contactEmail} · {env.contactPhone}
+            {(env.contactEmail || env.contactPhone) && (
+              <>
+                <br />
+                {[env.contactEmail, env.contactPhone].filter(Boolean).join(' · ')}
+              </>
+            )}
           </div>
         </div>
       )}

@@ -10,8 +10,8 @@ interface AppEnv {
   supabaseBucketVientos: string;
   supabaseBucketYareta: string;
   apiBaseUrl: string;
-  contactEmail: string;
-  contactPhone: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
 }
 
 function readRequired(key: keyof ImportMetaEnv, fallback?: string): string {
@@ -31,6 +31,6 @@ export const env: AppEnv = {
   supabaseBucketVientos: import.meta.env.VITE_SUPABASE_BUCKET_VIENTOS || 'Vientos',
   supabaseBucketYareta: import.meta.env.VITE_SUPABASE_BUCKET_YARETA || 'Yareta',
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
-  contactEmail: import.meta.env.VITE_CONTACT_EMAIL || 'hola@vientosdesanpedro.com',
-  contactPhone: import.meta.env.VITE_CONTACT_PHONE || '+56 9 8765 4321',
+  contactEmail: import.meta.env.VITE_CONTACT_EMAIL || null,
+  contactPhone: import.meta.env.VITE_CONTACT_PHONE || null,
 };
