@@ -5,6 +5,8 @@ export interface BookingRequestBody {
   checkIn: string;
   checkOut: string;
   guests: number;
+  arrival: Arrival;
+  paymentMethod: PaymentMethod;
   firstName: string;
   lastName: string;
   email: string;
@@ -12,6 +14,15 @@ export interface BookingRequestBody {
   notes: string;
   /** Honeypot: must arrive empty. A filled value means a bot filled every field. */
   company: string;
+}
+
+const ARRIVALS = ['14-17', '17-20', '20-23', 'late'] as const;
+const PAYMENT_METHODS = ['transfer', 'arrival'] as const;
+type Arrival = (typeof ARRIVALS)[number];
+type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+function oneOf<T extends string>(options: readonly T[], value: unknown, fallback: T): T {
+  return options.includes(value as T) ? (value as T) : fallback;
 }
 
 export type ValidationResult =
@@ -86,6 +97,8 @@ export function validateBookingRequest(body: unknown): ValidationResult {
       checkIn: b.checkIn,
       checkOut: b.checkOut,
       guests,
+      arrival: oneOf(ARRIVALS, b.arrival, '17-20'),
+      paymentMethod: oneOf(PAYMENT_METHODS, b.paymentMethod, 'transfer'),
       firstName: b.firstName.trim(),
       lastName: b.lastName.trim(),
       email: b.email.trim(),

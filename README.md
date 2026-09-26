@@ -38,20 +38,23 @@ straight from the browser with the Supabase anon key — that's what the anon ke
 are different: they go through `api/booking`, the one place that validates input server-side, rate-limits, and would
 hold any future secret (an email/CRM API key) that must never ship to the browser.
 
-## Room data comes from Storage, not from a hardcoded list
+## Rooms, rates and photos
 
-`StorageRepository.listRoomFolders(lodgeId)` lists the folders under `<bucket>/Habitaciones/`, and that list — not a
-hardcoded array — is what decides which rooms render on the site. `src/content/rooms.ts` only supplies the
-descriptive copy (bed/bath/price/description) that Storage can't hold, matched to a folder by its normalized name; a
-folder with no matching entry still renders, with sensible defaults. Add, rename or remove a room by editing the
-bucket — the site picks it up on next load, no deploy required.
+`src/content/rooms.ts` holds the 2026 rate sheet: every room, its beds/bath/capacity and price tiers. Each room names
+the Storage folder its photos live in (`folder`); rooms without a folder yet (Astro Camper, Catarpe) show their
+lodge's photo until one is uploaded.
 
-Expected bucket layout (both `Vientos` and `Yareta` buckets, both **public**):
+Photos come from the two public Supabase buckets (`Vientos` and `Yareta`):
 
 ```
-<bucket>/Areas comunes/*.jpg            → hero + gallery images
-<bucket>/Habitaciones/<Room Name>/*.jpg → one folder per room, its photos inside
+<bucket>/Areas comunes/*.jpg              → hero, lodge cards, contact, gallery
+<bucket>/Habitaciones/<Room folder>/*.jpg → that room's photos
 ```
+
+The hero and lodge cards use known files from "Areas comunes" (`src/content/media.ts`) by public URL, so they load
+with no extra setup. **Room photos and the full gallery need the buckets to be listable:** "Public" on a bucket only
+allows downloading by URL, so run `supabase/storage-policy.sql` once in Supabase → SQL Editor. Without it, rooms fall
+back to the lodge photo and the browser console warns about it.
 
 ## Local development
 

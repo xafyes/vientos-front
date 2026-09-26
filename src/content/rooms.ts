@@ -1,155 +1,93 @@
-import { normalizeKey } from '../lib/text';
-import type { RoomContent } from '../types/domain';
+import type { LodgeId } from './lodges';
 
-/**
- * Editorial content for each room, keyed by normalized room name.
- *
- * The room LIST ITSELF is never hardcoded here — it always comes from the
- * Supabase Storage folder listing (see services/storage), so a folder added
- * or removed in the bucket shows up on the site automatically. This map only
- * supplies the description/beds/baths/price copy that Storage cannot hold;
- * a folder with no matching entry falls back to DEFAULT_ROOM_CONTENT.
- */
-const ROOM_CONTENT: Record<string, RoomContent> = {
-  // Vientos
-  ara: {
-    description: 'Cuarto matrimonial con cama king y una cama single.',
-    bed: 'King + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 60000], [3, 75000]],
-  },
-  mallku: {
-    description: 'Cuarto matrimonial con cama king y una cama single.',
-    bed: 'King + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 60000], [3, 75000]],
-  },
-  jota: {
-    description: 'Cuarto matrimonial con cama king y una cama single.',
-    bed: 'King + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 60000], [3, 75000]],
-  },
-  solercio: {
-    description: 'Cuarto matrimonial con cama king y una cama single.',
-    bed: 'King + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 60000], [3, 75000]],
-  },
-  chacha: {
-    description: 'Cuarto privado en versión twin o dos camas singles.',
-    bed: 'Twin o 2 singles',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[2, 50000]],
-  },
-  'desert library': {
-    description: 'Casa rodante con cama matrimonial, entre los algarrobos.',
-    bed: 'Matrimonial',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[2, 45000]],
-  },
+/** Minimum guests for the tier, and the nightly rate in CLP. */
+export type PriceTier = readonly [guests: number, clp: number];
 
-  // La Yareta
-  loft: {
-    description: 'Cuarto estudio con mezzanina, cama superking y una single.',
-    bed: 'Superking + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 130000], [3, 145000]],
-  },
-  nana: {
-    description: 'Cuarto con cama queen, entre muros de barro pulido.',
-    bed: 'Queen',
-    bath: 'Baño privado',
-    capacity: 2,
-    tiers: [[2, 95000]],
-  },
-  tulor: {
-    description: 'Cama king más una single, para dos o tres personas.',
-    bed: 'King + single',
-    bath: 'Baño privado',
-    capacity: 3,
-    tiers: [[2, 90000], [3, 115000]],
-  },
-  coyo: {
-    description: 'Cuarto con cama matrimonial y baño privado.',
-    bed: 'Matrimonial',
-    bath: 'Baño privado',
-    capacity: 2,
-    tiers: [[2, 85000]],
-  },
-  yaye: {
-    description: 'Cuarto con cama matrimonial y baño privado.',
-    bed: 'Matrimonial',
-    bath: 'Baño privado',
-    capacity: 2,
-    tiers: [[2, 85000]],
-  },
-  better: {
-    description: 'Cuarto con cama matrimonial y baño privado.',
-    bed: 'Matrimonial',
-    bath: 'Baño privado',
-    capacity: 2,
-    tiers: [[2, 85000]],
-  },
-  quitor: {
-    description: 'Cama matrimonial y camarote, para hasta cuatro personas.',
-    bed: 'Matrimonial + camarote',
-    bath: 'Baño privado exterior',
-    capacity: 4,
-    tiers: [[1, 40000], [2, 70000], [3, 95000], [4, 110000]],
-  },
-  solor: {
-    description: 'Cama king más una single, o tres camas individuales.',
-    bed: 'King + single',
-    bath: 'Baño privado exterior',
-    capacity: 3,
-    tiers: [[1, 40000], [2, 70000], [3, 95000]],
-  },
-  solcor: {
-    description: 'Cuarto privado para una o dos personas, con baño compartido.',
-    bed: '1 o 2 camas',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[1, 40000], [2, 60000]],
-  },
-  larache: {
-    description: 'Cuarto privado para una o dos personas, con baño compartido.',
-    bed: '1 o 2 camas',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[1, 40000], [2, 60000]],
-  },
-  sequitor: {
-    description: 'Cuarto privado para una o dos personas, con baño compartido.',
-    bed: '1 o 2 camas',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[1, 40000], [2, 60000]],
-  },
-  poconche: {
-    description: 'Cuarto privado para una o dos personas, con baño compartido.',
-    bed: '1 o 2 camas',
-    bath: 'Baño compartido',
-    capacity: 2,
-    tiers: [[1, 40000], [2, 60000]],
-  },
-};
+export interface Room {
+  id: string;
+  lodge: LodgeId;
+  name: string;
+  /** Folder under `<bucket>/Habitaciones/`; null when the room has no photos uploaded yet. */
+  folder: string | null;
+  desc: string;
+  bed: string;
+  bath: string;
+  cap: number;
+  units: number;
+  tiers: readonly PriceTier[];
+}
 
-const DEFAULT_ROOM_CONTENT: RoomContent = {
-  description: 'Cuarto privado en Vientos & La Yareta, San Pedro de Atacama.',
-  bed: 'Consultar',
-  bath: 'Consultar',
-  capacity: 2,
-  tiers: [[2, 60000]],
-};
+/** Tarifario 2026. Breakfast included in every rate. */
+export const ROOMS: readonly Room[] = [
+  { id: 'v-ara', lodge: 'vientos', name: 'Ara', folder: 'Ara', units: 1,
+    desc: 'Cuarto matrimonial con cama king y una cama single.',
+    bed: 'King + single', bath: 'Baño privado', cap: 3, tiers: [[2, 60000], [3, 75000]] },
+  { id: 'v-malku', lodge: 'vientos', name: 'Malku', folder: 'Mallku', units: 1,
+    desc: 'Cuarto matrimonial con cama king y una cama single.',
+    bed: 'King + single', bath: 'Baño privado', cap: 3, tiers: [[2, 60000], [3, 75000]] },
+  { id: 'v-jota', lodge: 'vientos', name: 'Jota', folder: 'Jota', units: 1,
+    desc: 'Cuarto matrimonial con cama king y una cama single.',
+    bed: 'King + single', bath: 'Baño privado', cap: 3, tiers: [[2, 60000], [3, 75000]] },
+  { id: 'v-solercio', lodge: 'vientos', name: 'Solercio', folder: 'Solercio', units: 1,
+    desc: 'Cuarto matrimonial con cama king y una cama single.',
+    bed: 'King + single', bath: 'Baño privado', cap: 3, tiers: [[2, 60000], [3, 75000]] },
+  { id: 'v-chacha', lodge: 'vientos', name: 'Chacha', folder: 'Chacha', units: 1,
+    desc: 'Cuarto privado con baño compartido, en versión twin o dos camas singles.',
+    bed: 'Twin o 2 singles', bath: 'Baño compartido', cap: 2, tiers: [[2, 50000]] },
+  { id: 'v-astro', lodge: 'vientos', name: 'Astro Camper', folder: null, units: 1,
+    desc: 'Casa rodante en el jardín, para dormir mirando el cielo.',
+    bed: 'Twin o 2 singles', bath: 'Baño compartido', cap: 2, tiers: [[2, 45000]] },
+  { id: 'v-desert', lodge: 'vientos', name: 'Desert Library', folder: 'Desert Library', units: 1,
+    desc: 'Casa rodante con cama matrimonial, entre los algarrobos.',
+    bed: 'Matrimonial', bath: 'Baño compartido', cap: 2, tiers: [[2, 45000]] },
 
-export function contentForRoom(folderName: string): RoomContent {
-  return ROOM_CONTENT[normalizeKey(folderName)] ?? DEFAULT_ROOM_CONTENT;
+  { id: 'y-loft', lodge: 'yareta', name: 'Loft', folder: 'Loft', units: 1,
+    desc: 'Cuarto estudio con mezzanina, cama superking y una single.',
+    bed: 'Superking + single', bath: 'Baño privado', cap: 3, tiers: [[2, 130000], [3, 145000]] },
+  { id: 'y-nana', lodge: 'yareta', name: 'Ñaña', folder: 'Nana', units: 1,
+    desc: 'Cuarto con cama queen, entre muros de barro pulido.',
+    bed: 'Queen', bath: 'Baño privado', cap: 2, tiers: [[2, 95000]] },
+  { id: 'y-tulor', lodge: 'yareta', name: 'Tulor', folder: 'Tulor', units: 1,
+    desc: 'Cama king más una single, para dos o tres personas.',
+    bed: 'King + single', bath: 'Baño privado', cap: 3, tiers: [[2, 90000], [3, 115000]] },
+  { id: 'y-coyo', lodge: 'yareta', name: 'Coyo', folder: 'Coyo', units: 1,
+    desc: 'Cuarto con cama matrimonial y baño privado.',
+    bed: 'Matrimonial', bath: 'Baño privado', cap: 2, tiers: [[2, 85000]] },
+  { id: 'y-yaye', lodge: 'yareta', name: 'Yaye', folder: 'Yaye', units: 1,
+    desc: 'Cuarto con cama matrimonial y baño privado.',
+    bed: 'Matrimonial', bath: 'Baño privado', cap: 2, tiers: [[2, 85000]] },
+  { id: 'y-beter', lodge: 'yareta', name: 'Beter', folder: 'Better', units: 1,
+    desc: 'Cuarto con cama matrimonial y baño privado.',
+    bed: 'Matrimonial', bath: 'Baño privado', cap: 2, tiers: [[2, 85000]] },
+  { id: 'y-quitor', lodge: 'yareta', name: 'Quitor', folder: 'Quitor', units: 1,
+    desc: 'Cama matrimonial y camarote, para hasta cuatro personas.',
+    bed: 'Matrimonial + camarote', bath: 'Baño privado exterior', cap: 4,
+    tiers: [[1, 40000], [2, 70000], [3, 95000], [4, 110000]] },
+  { id: 'y-solor', lodge: 'yareta', name: 'Solor', folder: 'Solor', units: 1,
+    desc: 'Cama king más una single, o tres camas individuales.',
+    bed: 'King + single', bath: 'Baño privado exterior', cap: 3,
+    tiers: [[1, 40000], [2, 70000], [3, 95000]] },
+  { id: 'y-solcor', lodge: 'yareta', name: 'Solcor', folder: 'Solcor', units: 1,
+    desc: 'Cuarto privado para una o dos personas, con baño compartido.',
+    bed: '1 o 2 camas', bath: 'Baño compartido', cap: 2, tiers: [[1, 40000], [2, 60000]] },
+  { id: 'y-larache', lodge: 'yareta', name: 'Larache', folder: 'Larache', units: 1,
+    desc: 'Cuarto privado para una o dos personas, con baño compartido.',
+    bed: '1 o 2 camas', bath: 'Baño compartido', cap: 2, tiers: [[1, 40000], [2, 60000]] },
+  { id: 'y-sequitor', lodge: 'yareta', name: 'Sequitor', folder: 'Sequitor', units: 1,
+    desc: 'Cuarto privado para una o dos personas, con baño compartido.',
+    bed: '1 o 2 camas', bath: 'Baño compartido', cap: 2, tiers: [[1, 40000], [2, 60000]] },
+  { id: 'y-poconche', lodge: 'yareta', name: 'Poconche', folder: 'Poconche', units: 1,
+    desc: 'Cuarto privado para una o dos personas, con baño compartido.',
+    bed: '1 o 2 camas', bath: 'Baño compartido', cap: 2, tiers: [[1, 40000], [2, 60000]] },
+  { id: 'y-catarpe', lodge: 'yareta', name: 'Catarpe', folder: null, units: 1,
+    desc: 'Cuarto privado para una o dos personas, con baño compartido.',
+    bed: '1 o 2 camas', bath: 'Baño compartido', cap: 2, tiers: [[1, 45000], [2, 65000]] },
+];
+
+export function roomsOf(lodge: LodgeId): Room[] {
+  return ROOMS.filter((r) => r.lodge === lodge);
+}
+
+export function findRoom(id: string): Room | undefined {
+  return ROOMS.find((r) => r.id === id);
 }

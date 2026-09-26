@@ -1,14 +1,10 @@
-const clpFormatter = new Intl.NumberFormat('es-CL', {
-  style: 'currency',
-  currency: 'CLP',
-  maximumFractionDigits: 0,
-});
+import type { PriceTier, Room } from '../content/rooms';
 
-export function formatClp(amount: number): string {
-  return clpFormatter.format(amount);
+export function money(n: number): string {
+  return '$' + Math.round(n).toLocaleString('es-CL');
 }
 
-export function formatDateShort(iso: string): string {
+export function fmtDate(iso: string): string {
   if (!iso) return '—';
   const [, month, day] = iso.split('-');
   return `${day}/${month}`;
@@ -20,13 +16,23 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
   return diff > 0 ? Math.round(diff) : 0;
 }
 
-/** Nightly rate for the highest tier whose `guests` does not exceed the party size. */
-export function priceForGuests(tiers: readonly (readonly [number, number])[], guests: number): number {
-  const applicable = tiers.filter(([min]) => guests >= min);
-  const tier = applicable.length > 0 ? applicable[applicable.length - 1] : tiers[0];
-  return tier[1];
+/** Exact tier for the party size, else the next larger tier, else the largest. */
+export function priceFor(room: Room | undefined, guests: number): number {
+  if (!room) return 0;
+  const exact = room.tiers.find(([g]) => g === guests);
+  if (exact) return exact[1];
+  const above = [...room.tiers].filter(([g]) => g >= guests).sort((a, b) => a[0] - b[0])[0];
+  return above ? above[1] : room.tiers[room.tiers.length - 1][1];
 }
 
-export function minPrice(tiers: readonly (readonly [number, number])[]): number {
-  return Math.min(...tiers.map(([, price]) => price));
+export function minPrice(tiers: readonly PriceTier[]): number {
+  return Math.min(...tiers.map(([, p]) => p));
+}
+
+export function capShort(cap: number): string {
+  return cap === 1 ? '1 persona' : `hasta ${cap}`;
+}
+
+export function guestsLabel(n: number): string {
+  return `${n} ${n === 1 ? 'huésped' : 'huéspedes'}`;
 }

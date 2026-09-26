@@ -1,18 +1,13 @@
-import type { LodgeId } from '../../types/domain';
+import type { LodgeId } from '../../content/lodges';
 
-/**
- * Abstraction over "where room and area photos live". Components and hooks
- * depend on this interface, never on the Supabase SDK directly — swapping
- * the image host later (a different bucket layout, a CDN, a mock for tests)
- * only means writing a new implementation.
- */
+/** Where lodge and room photos live. Components depend on this, never on the Supabase SDK. */
 export interface StorageRepository {
-  /** Public URLs of every image directly inside "Areas comunes" for a lodge. */
+  /** Public URL for a known file in a lodge's bucket; needs no listing permission. */
+  publicUrl(lodgeId: LodgeId, path: string): string;
+
+  /** Every image directly inside "Areas comunes". */
   listAreaImages(lodgeId: LodgeId): Promise<string[]>;
 
-  /** Room folder names as they exist under "Habitaciones" for a lodge. */
-  listRoomFolders(lodgeId: LodgeId): Promise<string[]>;
-
-  /** Public URLs of every image inside one room's folder. */
+  /** Every image inside "Habitaciones/<folder>". */
   listRoomImages(lodgeId: LodgeId, folder: string): Promise<string[]>;
 }
